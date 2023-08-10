@@ -1,2 +1,2 @@
 # another-paginate-web
-This library provides with a simple pagination.
+This library provides a simple pagination technique.
