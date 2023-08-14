@@ -9,6 +9,7 @@ pub struct Pages {
 }
 
 impl Pages {
+
     pub fn new(length: usize, limit: usize, f: Option<fn(usize, usize) -> String>) -> Pages {
         Pages {
             offset: 0,
@@ -21,7 +22,7 @@ impl Pages {
 
 
     pub fn with_offset(&self, offset: usize) -> Page {
-        let mut page = Page::default();
+        let mut page = Page::default();// page
         page.offset = offset;
         page.begin = min(page.offset * self.limit, self.length);
         page.end = min(page.begin + self.limit, self.length);
@@ -51,7 +52,9 @@ impl Pages {
     }
 
     pub fn page_count(&self) -> usize {
-        (self.length + self.limit - 1) / self.limit
+        let mut page = Page::default();
+        page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
+        page.count_of_pages
     }
 }
 
@@ -84,6 +87,7 @@ pub struct Page {
     pub begin: usize,// total count of the posts, number of items per page, 0 index, 1 index, next arrow and previous arrow, iterator the paginator(advanced)
     pub end: usize, // current page number
     html: String, // end is not needed , offset and begin , selector to indicate active or not -> vector of an hash set
+    pub count_of_pages: usize,
 }
 
 impl Page {
@@ -100,6 +104,7 @@ impl Default for Page {
             begin: 0usize,
             end: 0usize,
             html: "".to_string(),
+            count_of_pages: 0,
         }
     }
 }
@@ -119,7 +124,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -137,7 +143,8 @@ mod tests {
                 length: 5,
                 begin: 0,
                 end: 4,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -147,7 +154,8 @@ mod tests {
                 length: 5,
                 begin: 5,
                 end: 9,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -175,7 +183,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -185,7 +194,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -213,7 +223,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -223,7 +234,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -252,7 +264,8 @@ mod tests {
                 begin: 0,
                 end: 4,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -262,7 +275,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -272,7 +286,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -300,7 +315,8 @@ mod tests {
                 length: 1,
                 begin: 0,
                 end: 0,
-                html: "<a href=\"www.test.com/0\"></a></br>".to_string()
+                html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -310,7 +326,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -339,7 +356,8 @@ mod tests {
                 begin: 0,
                 end: 1,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -350,7 +368,8 @@ mod tests {
                 begin: 2,
                 end: 3,
                 html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -360,7 +379,8 @@ mod tests {
                 length: 1,
                 begin: 4,
                 end: 4,
-                html: "<a href=\"www.test.com/4\"></a></br>".to_string()
+                html: "<a href=\"www.test.com/4\"></a></br>".to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -370,7 +390,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -400,7 +421,8 @@ mod tests {
                 begin: 0,
                 end: 1,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -411,7 +433,8 @@ mod tests {
                 begin: 2,
                 end: 3,
                 html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -422,7 +445,8 @@ mod tests {
                 begin: 4,
                 end: 5,
                 html: "<a href=\"www.test.com/4\"></a></br><a href=\"www.test.com/5\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -432,7 +456,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -461,7 +486,8 @@ mod tests {
                 begin: 0,
                 end: 2,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -472,7 +498,8 @@ mod tests {
                 begin: 3,
                 end: 4,
                 html: "<a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string()
+                    .to_string(),
+                count_of_pages: 0,
             }
         );
         assert_eq!(
@@ -482,7 +509,8 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
+                html: "".to_string(),
+                count_of_pages: 0,
             }
         );
     }
@@ -511,7 +539,8 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
+                    html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
+                    count_of_pages: 0,
                 }
             );
         }
@@ -541,7 +570,8 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
+                    html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
+                    count_of_pages: 0,
                 }
             );
         }
