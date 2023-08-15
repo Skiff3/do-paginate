@@ -56,7 +56,7 @@ impl Pages {
 
     pub fn generate_html(&self) -> String {
         let mut page = Page::default();
-        page.html = ("<ul><li><a href=\"0.0.0.0:4000/1\"></li></ul>".to_string());
+        page.html = ("<ul><li><a href=\"0.0.0.0:4000/1\"></li></ul> ".to_string());
         page.html
     }
 }
