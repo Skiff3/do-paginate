@@ -1,2 +1,2 @@
 # another-paginate-web
-This library provides a simple pagination technique. It returns a paginated HTML layout after counting the number of pages required.
+This library provides a simple pagination technique. It returns the offset, number of pages to be created, active page, and a basic HTML list.
