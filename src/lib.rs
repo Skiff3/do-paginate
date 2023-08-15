@@ -90,7 +90,7 @@ pub struct Page {
     pub length: usize,
     pub begin: usize,
     pub end: usize,
-    html: String,
+    pub html: String,
     pub count_of_pages: usize,
     pub active_page: usize,
 }
