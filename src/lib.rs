@@ -19,7 +19,7 @@ impl Pages {
     }
 
     pub fn with_offset(&self, offset: usize) -> Page {
-        let mut page = Page::default(); // page
+        let mut page = Page::default();
         page.offset = offset;
         page.begin = min(page.offset * self.limit, self.length);
         page.end = min(page.begin + self.limit, self.length);
@@ -37,7 +37,7 @@ impl Pages {
     }
 
     pub fn offset(&self) -> usize {
-        self.offset
+        self.offset //
     }
 
     pub fn length(&self) -> usize {
@@ -53,6 +53,12 @@ impl Pages {
         page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
         page.count_of_pages
     }
+
+    pub fn generate_html(&self) -> String {
+        let mut page = Page::default();
+        page.html = ("<ul><li><a href=\"0.0.0.0:4000/1\"></li></ul>".to_string());
+        page.html
+    }
 }
 
 impl Iterator for Pages {
@@ -60,6 +66,7 @@ impl Iterator for Pages {
     fn next(&mut self) -> Option<Self::Item> {
         let page: Page = self.with_offset(self.offset);
         self.offset += 1;
+
         if page.is_empty() {
             None
         } else {
