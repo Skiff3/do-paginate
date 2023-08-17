@@ -32,12 +32,12 @@ impl Pages {
         if page.length > 0 {
             page.end -= 1;
         };
-        page.html = (self.f)(page.begin, page.length);
+        //page.html = (self.f)(page.begin, page.length);
         page
     }
 
     pub fn offset(&self) -> usize {
-        self.offset //
+        self.offset
     }
 
     pub fn length(&self) -> usize {
@@ -55,37 +55,46 @@ impl Pages {
     }
 
     pub fn generate_html(&self) -> String {
+        println!("in generate");
         let mut page = Page::default();
-        page.html = ("<ul><li><a href=\"0.0.0.0:4000/1\"></li></ul> ".to_string());
+        for i in 0..page.length{
+            println!("in page length {}",i);
+            let mut pagination_html = r#"<li><a href="0.0.0.0:4000/page/"#;
+            page.html.push(pagination_html.parse().unwrap());
+            let mut page_number_as_string = i.to_string();
+            page.html.push(page_number_as_string.parse().unwrap());//
+            let mut end_pagination_html = r#""></a></li>"#;
+            page.html.push(end_pagination_html.parse().unwrap());
+        }
         page.html
     }
 }
 
-impl Iterator for Pages {
+impl Iterator for Pages { //pages.iter  returns new struct
     type Item = Page;
     fn next(&mut self) -> Option<Self::Item> {
         let page: Page = self.with_offset(self.offset);
         self.offset += 1;
 
-        if page.is_empty() {
+        if page.is_empty() { // self.offset with offset released and is empty
             None
-        } else {
+        } else { //
             Some(page)
         }
     }
 }
 
+
 impl IntoIterator for &Pages {
     type Item = Page;
     type IntoIter = Pages;
-
     fn into_iter(self) -> Pages {
         self.clone()
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Page {
+pub struct Page { // debug equations clone clone first commit
     pub offset: usize,
     pub length: usize,
     pub begin: usize,
@@ -427,9 +436,9 @@ mod tests {
                 format!(
                     "{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<li><a href=\"0.0.0.0:4000/page/".to_string(),
                     t.to_string(),
-                    "\"></a></br>".to_string()
+                    "\"></a></li>".to_string()
                 )
             })
         };
@@ -442,7 +451,7 @@ mod tests {
                 length: 2,
                 begin: 0,
                 end: 1,
-                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
+                html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li><li><a href=\"0.0.0.0:4000/page/2\"></a></li>"
                     .to_string(),
                 count_of_pages: 0,
                 active_page: 0,
@@ -452,10 +461,10 @@ mod tests {
             pages.with_offset(1),
             Page {
                 offset: 1,
-                length: 2,
+                length: 2,// length
                 begin: 2,
                 end: 3,
-                html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
+                html: "<li><a href=\"0.0.0.0:4000/page/1\"></a></li><li><a href=\"0.0.0.0:4000/page/2\"></a></li>"
                     .to_string(),
                 count_of_pages: 0,
                 active_page: 0,
