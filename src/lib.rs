@@ -32,7 +32,7 @@ impl Pages {
         if page.length > 0 {
             page.end -= 1;
         };
-        //page.html = (self.f)(page.begin, page.length); page end length
+        page.html = (self.f)(page.begin, page.length);
         page
     }
 
@@ -57,12 +57,12 @@ impl Pages {
     pub fn generate_html(&self) -> String {
         println!("in generate");
         let mut page = Page::default();
-        for i in 0..page.length{
-            println!("in page length {}",i);
+        for i in 0..page.length {
+            println!("in page length {}", i);
             let mut pagination_html = r#"<li><a href="0.0.0.0:4000/page/"#;
             page.html.push(pagination_html.parse().unwrap());
             let mut page_number_as_string = i.to_string();
-            page.html.push(page_number_as_string.parse().unwrap());//
+            page.html.push(page_number_as_string.parse().unwrap());
             let mut end_pagination_html = r#""></a></li>"#;
             page.html.push(end_pagination_html.parse().unwrap());
         }
@@ -70,7 +70,8 @@ impl Pages {
     }
 }
 
-impl Iterator for Pages { //pages.iter  returns new struct pages and item
+impl Iterator for Pages {
+    //pages.iter  returns new struct pages and item
     type Item = Page;
     fn next(&mut self) -> Option<Self::Item> {
         let page: Page = self.with_offset(self.offset);
@@ -78,7 +79,7 @@ impl Iterator for Pages { //pages.iter  returns new struct pages and item
 
         if page.is_empty() {
             None
-        } else { //
+        } else {
             Some(page)
         }
     }
@@ -93,7 +94,8 @@ impl IntoIterator for &Pages {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Page { // debug equations clone clone first commit partial equations?>?
+pub struct Page {
+    // debug equations clone clone first commit partial equations?>?
     pub offset: usize,
     pub length: usize,
     pub begin: usize,
@@ -102,7 +104,6 @@ pub struct Page { // debug equations clone clone first commit partial equations?
     pub count_of_pages: usize,
     pub active_page: usize,
 }
-
 
 impl Page {
     pub fn is_empty(&self) -> bool {
