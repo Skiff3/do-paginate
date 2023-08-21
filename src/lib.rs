@@ -452,7 +452,7 @@ mod tests {
                 length: 2,
                 begin: 0,
                 end: 1,
-                html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li><li><a href=\"0.0.0.0:4000/page/2\"></a></li>"
+                html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li>"
                     .to_string(),
                 count_of_pages: 0,
                 active_page: 0,
@@ -465,7 +465,7 @@ mod tests {
                 length: 2,// length
                 begin: 2,
                 end: 3,
-                html: "<li><a href=\"0.0.0.0:4000/page/1\"></a></li><li><a href=\"0.0.0.0:4000/page/2\"></a></li>"
+                html: "<li><a href=\"0.0.0.0:4000/page/2\"></a></li><li><a href=\"0.0.0.0:4000/page/3\"></a></li>"
                     .to_string(),
                 count_of_pages: 0,
                 active_page: 0,
@@ -478,7 +478,7 @@ mod tests {
                 length: 2,
                 begin: 4,
                 end: 5,
-                html: "<a href=\"www.test.com/4\"></a></br><a href=\"www.test.com/5\"></a></br>"
+                html: "<li><a href=\"0.0.0.0:4000/page/4\"></a></li><li><a href=\"0.0.0.0:4000/page/5\"></a></li>"
                     .to_string(),
                 count_of_pages: 0,
                 active_page: 0,
