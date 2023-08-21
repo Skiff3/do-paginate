@@ -24,6 +24,7 @@ impl Pages {
         page.begin = min(page.offset * self.limit, self.length);
         page.end = min(page.begin + self.limit, self.length);
         page.length = max(page.end - page.begin, 0);
+        page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
 
         if page.length == 0 {
             page.begin = 0;
@@ -64,8 +65,8 @@ impl Pages {
             let mut page_number_as_string = i.to_string();
             page.html.push(page_number_as_string.parse().unwrap());
             let mut end_pagination_html = r#""></a></li>"#;
-            page.html.push(end_pagination_html.parse().unwrap());
-        }
+            page.html.push(end_pagination_html.parse().unwrap()); // html //
+        }//
         page.html
     }
 }
@@ -95,7 +96,7 @@ impl IntoIterator for &Pages {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Page {
-    // debug equations clone clone first commit partial equations?>?
+
     pub offset: usize,
     pub length: usize,
     pub begin: usize,
@@ -143,7 +144,7 @@ mod tests {
                 html: "".to_string(),
                 count_of_pages: 0,
                 active_page: 0,
-            }
+            } 
         );
     }
 
