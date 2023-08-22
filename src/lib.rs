@@ -55,16 +55,16 @@ impl Pages {
         page.count_of_pages
     }
 
-    pub fn generate_html(&self) -> String {
+    pub fn generate_html(&self,length:usize) -> String {
         println!("in generate");
         let mut page = Page::default();
-        for i in 0..page.length {
+        for i in 0..length {
             println!("in page length {}", i);
-            let mut pagination_html = r#"<li><a href="0.0.0.0:4000/page/"#;
+            let mut pagination_html = "<li><a href=\"0.0.0.0:4000/page/";
             page.html.push(pagination_html.parse().unwrap());
             let mut page_number_as_string = i.to_string();
-            page.html.push(page_number_as_string.parse().unwrap());
-            let mut end_pagination_html = r#""></a></li>"#;
+            page.html.push(page_number_as_string.parse().unwrap()); //
+            let mut end_pagination_html = "></a></li>\"";
             page.html.push(end_pagination_html.parse().unwrap()); // html //
         }//
         page.html
@@ -78,6 +78,7 @@ impl Iterator for Pages {
         let page: Page = self.with_offset(self.offset);
         self.offset += 1;
 
+
         if page.is_empty() {
             None
         } else {
@@ -85,6 +86,7 @@ impl Iterator for Pages {
         }
     }
 }
+
 
 impl IntoIterator for &Pages {
     type Item = Page;
@@ -144,7 +146,7 @@ mod tests {
                 html: "".to_string(),
                 count_of_pages: 0,
                 active_page: 0,
-            } 
+            }
         );
     }
 
@@ -162,8 +164,8 @@ mod tests {
                 begin: 0,
                 end: 4,
                 html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
+                count_of_pages: 2,
+                active_page: 0,//
             }
         );
         assert_eq!(
@@ -174,7 +176,7 @@ mod tests {
                 begin: 5,
                 end: 9,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 2,
                 active_page: 0,
             }
         );
@@ -276,7 +278,7 @@ mod tests {
                     "<a href=\"www.test.com/".to_string(),
                     t.to_string(),
                     "\"></a></br>".to_string()
-                )
+                ) // or else <br> to to string to string pages new total items some items per page some
             })
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
@@ -289,11 +291,11 @@ mod tests {
                 end: 4,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 1,
                 active_page: 0,
             }
         );
-        assert_eq!(
+            assert_eq!(
             pages.with_offset(1),
             Page {
                 offset: 1,
@@ -301,7 +303,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 1,
                 active_page: 0,
             }
         );
@@ -313,7 +315,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 1,
                 active_page: 0,
             }
         );
@@ -343,7 +345,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 1,// count of pages active to string
                 active_page: 0,
             }
         );
@@ -355,7 +357,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 1,
                 active_page: 0,
             }
         );
@@ -386,7 +388,7 @@ mod tests {
                 end: 1,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -399,7 +401,7 @@ mod tests {
                 end: 3,
                 html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -411,7 +413,7 @@ mod tests {
                 begin: 4,
                 end: 4,
                 html: "<a href=\"www.test.com/4\"></a></br>".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -423,7 +425,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -455,7 +457,7 @@ mod tests {
                 end: 1,
                 html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -468,7 +470,7 @@ mod tests {
                 end: 3,
                 html: "<li><a href=\"0.0.0.0:4000/page/2\"></a></li><li><a href=\"0.0.0.0:4000/page/3\"></a></li>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -481,7 +483,7 @@ mod tests {
                 end: 5,
                 html: "<li><a href=\"0.0.0.0:4000/page/4\"></a></li><li><a href=\"0.0.0.0:4000/page/5\"></a></li>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
@@ -489,7 +491,7 @@ mod tests {
             pages.with_offset(3),
             Page {
                 offset: 3,
-                length: 0,
+                length: 0,// length with begin and end html to string
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
@@ -524,7 +526,7 @@ mod tests {
                 end: 2,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 2,
                 active_page: 0,
             }
         );
@@ -537,7 +539,7 @@ mod tests {
                 end: 4,
                 html: "<a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
                     .to_string(),
-                count_of_pages: 0,
+                count_of_pages: 2,
                 active_page: 0,
             }
         );
@@ -549,7 +551,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 2,
                 active_page: 0,
             }
         );
@@ -580,7 +582,7 @@ mod tests {
                     begin: 0,
                     end: 0,
                     html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                    count_of_pages: 0,
+                    count_of_pages: 1,
                     active_page: 0,
                 }
             );
@@ -612,7 +614,7 @@ mod tests {
                     begin: 0,
                     end: 0,
                     html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                    count_of_pages: 0,
+                    count_of_pages: 1,
                     active_page: 0,
                 }
             );
@@ -655,7 +657,7 @@ mod tests {
         assert_eq!(20, pages.page_count());
 
         let pages = Pages::new(101, 5, None);
-        assert_eq!(21, pages.page_count()); // add len 1 and 0
+        assert_eq!(21, pages.page_count()); //
 
         let pages = Pages::new(104, 5, None);
         assert_eq!(21, pages.page_count());
