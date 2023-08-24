@@ -24,8 +24,9 @@ impl Pages {
         page.begin = min(page.offset * self.limit, self.length);
         page.end = min(page.begin + self.limit, self.length);
         page.length = max(page.end - page.begin, 0);
-        page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
-
+        if self.limit != 0 {
+            page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
+        }
         if page.length == 0 {
             page.begin = 0;
             page.end = 0;
@@ -58,19 +59,18 @@ impl Pages {
     pub fn generate_html(&self, length: usize) -> String {
         let mut page = Page::default();
         for i in 0..length {
-            println!("in page length {}", i);
             let pagination_html = "<li><a href=\"0.0.0.0:4000/page/";
-            page.html.push(pagination_html.parse().unwrap());
-            let page_number_as_string = i.to_string();
-            page.html.push(page_number_as_string.parse().unwrap());
+            page.html.push_str(pagination_html);
+            let page_number_as_string  = i.to_string();
+            page.html.push_str(&page_number_as_string);
             let end_pagination_html = "></a></li>\"";
-            page.html.push(end_pagination_html.parse().unwrap());
+            page.html.push_str(end_pagination_html);
         }
         page.html
     }
 }
 
-impl Iterator for Pages {
+impl Iterator for Pages { // add a method to Pages for example Pages.iter() -> should return a new structure called iter. This iter has information from Pages
     type Item = Page;
     fn next(&mut self) -> Option<Self::Item> {
         let page: Page = self.with_offset(self.offset);
@@ -489,7 +489,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
-                count_of_pages: 0,
+                count_of_pages: 3,
                 active_page: 0,
             }
         );
