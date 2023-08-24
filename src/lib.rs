@@ -55,30 +55,26 @@ impl Pages {
         page.count_of_pages
     }
 
-    pub fn generate_html(&self,length:usize) -> String {
-        println!("in generate");
+    pub fn generate_html(&self, length: usize) -> String {
         let mut page = Page::default();
         for i in 0..length {
             println!("in page length {}", i);
-            let mut pagination_html = "<li><a href=\"0.0.0.0:4000/page/";
+            let pagination_html = "<li><a href=\"0.0.0.0:4000/page/";
             page.html.push(pagination_html.parse().unwrap());
-            let mut page_number_as_string = i.to_string();
-            page.html.push(page_number_as_string.parse().unwrap()); //
-            let mut end_pagination_html = "></a></li>\"";
-            page.html.push(end_pagination_html.parse().unwrap()); // html //
-        }//
+            let page_number_as_string = i.to_string();
+            page.html.push(page_number_as_string.parse().unwrap());
+            let end_pagination_html = "></a></li>\"";
+            page.html.push(end_pagination_html.parse().unwrap());
+        }
         page.html
     }
 }
 
 impl Iterator for Pages {
-    //pages.iter  returns new struct pages and item
     type Item = Page;
     fn next(&mut self) -> Option<Self::Item> {
         let page: Page = self.with_offset(self.offset);
         self.offset += 1;
-
-
         if page.is_empty() {
             None
         } else {
@@ -86,7 +82,6 @@ impl Iterator for Pages {
         }
     }
 }
-
 
 impl IntoIterator for &Pages {
     type Item = Page;
@@ -98,7 +93,6 @@ impl IntoIterator for &Pages {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Page {
-
     pub offset: usize,
     pub length: usize,
     pub begin: usize,
@@ -165,7 +159,7 @@ mod tests {
                 end: 4,
                 html: "".to_string(),
                 count_of_pages: 2,
-                active_page: 0,//
+                active_page: 0,
             }
         );
         assert_eq!(
@@ -278,7 +272,7 @@ mod tests {
                     "<a href=\"www.test.com/".to_string(),
                     t.to_string(),
                     "\"></a></br>".to_string()
-                ) // or else <br> to to string to string pages new total items some items per page some
+                )
             })
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
@@ -295,7 +289,7 @@ mod tests {
                 active_page: 0,
             }
         );
-            assert_eq!(
+        assert_eq!(
             pages.with_offset(1),
             Page {
                 offset: 1,
@@ -345,7 +339,7 @@ mod tests {
                 begin: 0,
                 end: 0,
                 html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                count_of_pages: 1,// count of pages active to string
+                count_of_pages: 1,
                 active_page: 0,
             }
         );
@@ -452,7 +446,7 @@ mod tests {
             pages.with_offset(0),
             Page {
                 offset: 0,
-                length: 2,
+                length: 2, //
                 begin: 0,
                 end: 1,
                 html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li>"
@@ -465,7 +459,7 @@ mod tests {
             pages.with_offset(1),
             Page {
                 offset: 1,
-                length: 2,// length
+                length: 2,
                 begin: 2,
                 end: 3,
                 html: "<li><a href=\"0.0.0.0:4000/page/2\"></a></li><li><a href=\"0.0.0.0:4000/page/3\"></a></li>"
@@ -486,12 +480,12 @@ mod tests {
                 count_of_pages: 3,
                 active_page: 0,
             }
-        );
+        ); // assert
         assert_eq!(
             pages.with_offset(3),
             Page {
                 offset: 3,
-                length: 0,// length with begin and end html to string
+                length: 0,
                 begin: 0,
                 end: 0,
                 html: "".to_string(),
@@ -575,7 +569,7 @@ mod tests {
         let pages = Pages::new(total_items, items_per_page, Some(f));
         for p in pages {
             assert_eq!(
-                p, //
+                p,
                 Page {
                     offset: 0,
                     length: 1,
@@ -657,7 +651,7 @@ mod tests {
         assert_eq!(20, pages.page_count());
 
         let pages = Pages::new(101, 5, None);
-        assert_eq!(21, pages.page_count()); //
+        assert_eq!(21, pages.page_count());
 
         let pages = Pages::new(104, 5, None);
         assert_eq!(21, pages.page_count());
