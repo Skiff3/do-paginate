@@ -1,32 +1,36 @@
-use std::cmp::{max, min};
+use std::{
+    cmp::{max, min},
+    fmt::Error,
+};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Pages {
     offset: usize,
     length: usize,
-    limit: usize,
-    f: fn(usize, usize) -> String,
+    per_page: usize,
+    html_function: fn(usize, usize) -> String,
 }
 
 impl Pages {
-    pub fn new(length: usize, limit: usize, f: Option<fn(usize, usize) -> String>) -> Pages {
+    pub fn new(length: usize, per_page: usize, f: Option<fn(usize, usize) -> String>) -> Pages {
         Pages {
             offset: 0,
             length,
-            limit,
-            f: f.unwrap_or(|_: usize, _| -> String { "".to_string() }),
+            per_page,
+            html_function: f.unwrap_or(|_, _| -> String { "".to_string() }),
         }
     }
 
-    pub fn with_offset(&self, offset: usize) -> Page {
+    pub fn to_page_number(&self, offset: usize) -> Result<Page, Error> {
         let mut page = Page::default();
-        page.offset = offset;
-        page.begin = min(page.offset * self.limit, self.length);
-        page.end = min(page.begin + self.limit, self.length);
-        page.length = max(page.end - page.begin, 0);
-        if self.limit != 0 {
-            page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
+        if offset > self.page_count() {
+            panic!("Page number Out of Bound")
         }
+        page.offset = offset;
+        page.begin = min(page.offset * self.per_page, self.length);
+        page.end = min(page.begin + self.per_page, self.length);
+        page.length = max(page.end - page.begin, 0);
+
         if page.length == 0 {
             page.begin = 0;
             page.end = 0;
@@ -34,8 +38,8 @@ impl Pages {
         if page.length > 0 {
             page.end -= 1;
         };
-        page.html = (self.f)(page.begin, page.length);
-        page
+        page.html = (self.html_function)(page.begin, page.length);
+        Ok(page)
     }
 
     pub fn offset(&self) -> usize {
@@ -46,34 +50,24 @@ impl Pages {
         self.length
     }
 
-    pub fn limit(&self) -> usize {
-        self.limit
+    pub fn per_page(&self) -> usize {
+        self.per_page
     }
 
     pub fn page_count(&self) -> usize {
-        let mut page = Page::default();
-        page.count_of_pages = (self.length + self.limit - 1) / self.limit as usize;
-        page.count_of_pages
-    }
-
-    pub fn generate_html(&self, length: usize) -> String {
-        let mut page = Page::default();
-        for i in 0..length {
-            let pagination_html = "<li><a href=\"0.0.0.0:4000/page/";
-            page.html.push_str(pagination_html);
-            let page_number_as_string  = i.to_string();
-            page.html.push_str(&page_number_as_string);
-            let end_pagination_html = "></a></li>\"";
-            page.html.push_str(end_pagination_html);
-        }
-        page.html
+        (self.length + self.per_page - 1) / self.per_page
     }
 }
 
-impl Iterator for Pages { // add a method to Pages for example Pages.iter() -> should return a new structure called iter. This iter has information from Pages
+impl Iterator for Pages {
     type Item = Page;
     fn next(&mut self) -> Option<Self::Item> {
-        let page: Page = self.with_offset(self.offset);
+        let page: Page = match self.to_page_number(self.offset) {
+            Ok(page) => page,
+            Err(msg) => {
+                panic!("{:#?}", msg)
+            }
+        };
         self.offset += 1;
         if page.is_empty() {
             None
@@ -86,20 +80,24 @@ impl Iterator for Pages { // add a method to Pages for example Pages.iter() -> s
 impl IntoIterator for &Pages {
     type Item = Page;
     type IntoIter = Pages;
+
     fn into_iter(self) -> Pages {
-        self.clone()
+        Pages {
+            offset: 0,
+            length: self.length(),
+            per_page: self.per_page(),
+            html_function: self.html_function,
+        }
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct Page {
     pub offset: usize,
     pub length: usize,
     pub begin: usize,
     pub end: usize,
-    pub html: String,
-    pub count_of_pages: usize,
-    pub active_page: usize,
+    html: String,
 }
 
 impl Page {
@@ -108,24 +106,14 @@ impl Page {
     }
 }
 
-impl Default for Page {
-    fn default() -> Self {
-        Self {
-            offset: 0usize,
-            length: 0usize,
-            begin: 0usize,
-            end: 0usize,
-            html: "".to_string(),
-            count_of_pages: 0,
-            active_page: 0,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
-
     use super::{Page, Pages};
+    use std::fmt::{self, Error};
+
+    fn get_url() -> String {
+        "www.test.com/".to_string()
+    }
 
     #[test]
     fn default_page() {
@@ -137,9 +125,7 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -151,41 +137,66 @@ mod tests {
 
         let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 5,
                 begin: 0,
                 end: 4,
-                html: "".to_string(),
-                count_of_pages: 2,
-                active_page: 0,
+                html: "".to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 5,
                 begin: 5,
                 end: 9,
-                html: "".to_string(),
-                count_of_pages: 2,
-                active_page: 0,
+                html: "".to_string()
             }
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn out_of_bound() -> () {
+        let total_items = 0usize;
+        let items_per_page = 5usize;
+        let pages = Pages::new(total_items, items_per_page, None);
+        let page = match pages.to_page_number(1) {
+            Ok(page) => page,
+            Err(msg) => {
+                eprint!("{}", msg);
+                Page::default()
+            }
+        };
     }
 
     #[test]
     fn empty_page() {
         let total_items = 0usize;
         let items_per_page = 5usize;
+
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -193,73 +204,24 @@ mod tests {
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
-            }
-        );
-        assert_eq!(
-            pages.with_offset(1),
-            Page {
-                offset: 1,
-                length: 0,
-                begin: 0,
-                end: 0,
-                html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
 
     #[test]
-    fn limitless_page() {
-        let total_items = 5usize;
-        let items_per_page = 0usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}",
-                    s,
-                    "<a href=\"www.test.com/".to_string(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
-        assert_eq!(
-            pages.with_offset(0),
-            Page {
-                offset: 0,
-                length: 0,
-                begin: 0,
-                end: 0,
-                html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
-            }
-        );
-        assert_eq!(
-            pages.with_offset(1),
-            Page {
-                offset: 1,
-                length: 0,
-                begin: 0,
-                end: 0,
-                html: "".to_string(),
-                count_of_pages: 0,
-                active_page: 0,
-            }
-        );
-    }
-
     #[test]
     fn single_page() {
         let total_items = 5usize;
@@ -267,9 +229,10 @@ mod tests {
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -277,40 +240,36 @@ mod tests {
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 5,
                 begin: 0,
                 end: 4,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string(),
-                count_of_pages: 1,
-                active_page: 0,
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 1,
-                active_page: 0,
-            }
-        );
-        assert_eq!(
-            pages.with_offset(2),
-            Page {
-                offset: 2,
-                length: 0,
-                begin: 0,
-                end: 0,
-                html: "".to_string(),
-                count_of_pages: 1,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -319,12 +278,14 @@ mod tests {
     fn single_item() {
         let total_items = 1usize;
         let items_per_page = 5usize;
+
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -332,27 +293,35 @@ mod tests {
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 1,
                 begin: 0,
                 end: 0,
-                html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                count_of_pages: 1,
-                active_page: 0,
+                html: "<a href=\"www.test.com/0\"></a></br>".to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 1,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -364,9 +333,10 @@ mod tests {
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -374,53 +344,69 @@ mod tests {
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 2,
                 begin: 0,
                 end: 1,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
-                    .to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 2,
                 begin: 2,
                 end: 3,
                 html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
-                    .to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(2),
+            match pages.to_page_number(2) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 2,
                 length: 1,
                 begin: 4,
                 end: 4,
-                html: "<a href=\"www.test.com/4\"></a></br>".to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "<a href=\"www.test.com/4\"></a></br>".to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(3),
+            match pages.to_page_number(3) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 3,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -429,68 +415,86 @@ mod tests {
     fn even_items() {
         let total_items = 6usize;
         let items_per_page = 2usize;
+
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<li><a href=\"0.0.0.0:4000/page/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
-                    "\"></a></li>".to_string()
+                    "\"></a></br>".to_string()
                 )
             })
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
 
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
-                length: 2, //
+                length: 2,
                 begin: 0,
                 end: 1,
-                html: "<li><a href=\"0.0.0.0:4000/page/0\"></a></li><li><a href=\"0.0.0.0:4000/page/1\"></a></li>"
-                    .to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 2,
                 begin: 2,
                 end: 3,
-                html: "<li><a href=\"0.0.0.0:4000/page/2\"></a></li><li><a href=\"0.0.0.0:4000/page/3\"></a></li>"
-                    .to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(2),
+            match pages.to_page_number(2) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 2,
                 length: 2,
                 begin: 4,
                 end: 5,
-                html: "<li><a href=\"0.0.0.0:4000/page/4\"></a></li><li><a href=\"0.0.0.0:4000/page/5\"></a></li>"
-                    .to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "<a href=\"www.test.com/4\"></a></br><a href=\"www.test.com/5\"></a></br>"
+                    .to_string()
             }
-        ); // assert
+        );
         assert_eq!(
-            pages.with_offset(3),
+            match pages.to_page_number(3) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 3,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 3,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -502,9 +506,10 @@ mod tests {
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -512,41 +517,53 @@ mod tests {
         };
         let pages = Pages::new(total_items, items_per_page, Some(f));
         assert_eq!(
-            pages.with_offset(0),
+            match pages.to_page_number(0) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 0,
                 length: 3,
                 begin: 0,
                 end: 2,
                 html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br>"
-                    .to_string(),
-                count_of_pages: 2,
-                active_page: 0,
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(1),
+            match pages.to_page_number(1) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 1,
                 length: 2,
                 begin: 3,
                 end: 4,
                 html: "<a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string(),
-                count_of_pages: 2,
-                active_page: 0,
+                    .to_string()
             }
         );
         assert_eq!(
-            pages.with_offset(2),
+            match pages.to_page_number(2) {
+                Ok(page) => page,
+                Err(msg) => {
+                    eprint!("{}", msg);
+                    Page::default()
+                }
+            },
             Page {
                 offset: 2,
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string(),
-                count_of_pages: 2,
-                active_page: 0,
+                html: "".to_string()
             }
         );
     }
@@ -558,9 +575,10 @@ mod tests {
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -575,9 +593,7 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                    count_of_pages: 1,
-                    active_page: 0,
+                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
                 }
             );
         }
@@ -590,9 +606,10 @@ mod tests {
         let f: fn(usize, usize) -> String = |x, y| -> String {
             (x..x + y).fold("".to_string(), |s: String, t: usize| {
                 format!(
-                    "{}{}{}{}",
+                    "{}{}{}{}{}",
                     s,
-                    "<a href=\"www.test.com/".to_string(),
+                    "<a href=\"",
+                    get_url(),
                     t.to_string(),
                     "\"></a></br>".to_string()
                 )
@@ -607,9 +624,7 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string(),
-                    count_of_pages: 1,
-                    active_page: 0,
+                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
                 }
             );
         }
@@ -642,7 +657,7 @@ mod tests {
     #[test]
     fn limit() {
         let pages = Pages::new(100, 5, None);
-        assert_eq!(5, pages.limit());
+        assert_eq!(5, pages.per_page());
     }
 
     #[test]
@@ -651,9 +666,6 @@ mod tests {
         assert_eq!(20, pages.page_count());
 
         let pages = Pages::new(101, 5, None);
-        assert_eq!(21, pages.page_count());
-
-        let pages = Pages::new(104, 5, None);
         assert_eq!(21, pages.page_count());
 
         let pages = Pages::new(99, 5, None);
