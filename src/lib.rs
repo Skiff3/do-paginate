@@ -1,7 +1,15 @@
-use std::{
-    cmp::{max, min},
-    fmt::Error,
-};
+use std::cmp::{max, min};
+
+use std::{error::Error, fmt};
+
+#[derive(Debug)]
+pub struct OutOfBound;
+
+impl fmt::Display for OutOfBound {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "out of bound")
+    }
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Pages {
@@ -21,10 +29,11 @@ impl Pages {
         }
     }
 
-    pub fn to_page_number(&self, offset: usize) -> Result<Page, Error> {
+    pub fn to_page_number(&self, offset: usize) -> Result<Page, OutOfBound> {
         let mut page = Page::default();
+
         if offset > self.page_count() {
-            panic!("Page number Out of Bound")
+            return Err(OutOfBound);
         }
         page.offset = offset;
         page.begin = min(page.offset * self.per_page, self.length);
@@ -108,11 +117,24 @@ impl Page {
 
 #[cfg(test)]
 mod tests {
+
     use super::{Page, Pages};
     use std::fmt::{self, Error};
 
     fn get_url() -> String {
         "www.test.com/".to_string()
+    }
+
+    #[test]
+    fn test_iter() {
+        let pages = Pages::new(10, 2, None);
+        let mut list_page: Vec<Page> = Vec::new();
+        let iter = pages.into_iter();
+        for page in iter {
+            // eprintln!("{:#?}", page);
+            list_page.push(page);
+        }
+        assert_eq!(list_page.len(), 5);
     }
 
     #[test]
@@ -171,8 +193,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn out_of_bound() -> () {
+    fn out_of_bound() {
         let total_items = 0usize;
         let items_per_page = 5usize;
         let pages = Pages::new(total_items, items_per_page, None);
@@ -183,6 +204,16 @@ mod tests {
                 Page::default()
             }
         };
+        assert_eq!(
+            page,
+            Page {
+                offset: 0,
+                length: 0,
+                begin: 0,
+                end: 0,
+                html: "".to_string()
+            }
+        );
     }
 
     #[test]
@@ -221,7 +252,6 @@ mod tests {
         );
     }
 
-    #[test]
     #[test]
     fn single_page() {
         let total_items = 5usize;
