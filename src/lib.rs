@@ -18,7 +18,6 @@ pub struct Pages {
     page_number: usize,
     length: usize,
     per_page: usize,
-    html_function: fn(usize, usize) -> String,
 }
 
 impl Pages {
@@ -27,7 +26,6 @@ impl Pages {
             page_number: 0,
             length,
             per_page,
-            html_function: f.unwrap_or(|_, _| -> String { "".to_string() }),
         }
     }
 
@@ -49,7 +47,7 @@ impl Pages {
         if page.length > 0 {
             page.end -= 1;
         };
-        page.html = (self.html_function)(page.begin, page.length);
+
         Ok(page)
     }
 
@@ -91,7 +89,6 @@ impl IntoIterator for &Pages {
             page_number: 0,
             length: self.length(),
             per_page: self.per_page(),
-            html_function: self.html_function,
         }
     }
 }
@@ -102,7 +99,6 @@ pub struct Page {
     pub length: usize,
     pub begin: usize,
     pub end: usize,
-    pub html: String,
 }
 
 impl Page {
@@ -131,7 +127,6 @@ mod tests {
                 length: 2,
                 begin: 0,
                 end: 1,
-                html: "".to_string(),
             })
         );
         assert_eq!(
@@ -141,7 +136,6 @@ mod tests {
                 length: 2,
                 begin: 2,
                 end: 3,
-                html: "".to_string(),
             })
         );
         assert_eq!(
@@ -151,7 +145,6 @@ mod tests {
                 length: 2,
                 begin: 4,
                 end: 5,
-                html: "".to_string(),
             })
         );
         assert_eq!(pages_iter.next(), None);
@@ -167,7 +160,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -191,7 +183,6 @@ mod tests {
                 length: 5,
                 begin: 0,
                 end: 4,
-                html: "".to_string()
             }
         );
         assert_eq!(
@@ -207,7 +198,6 @@ mod tests {
                 length: 5,
                 begin: 5,
                 end: 9,
-                html: "".to_string()
             }
         );
     }
@@ -231,7 +221,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -267,7 +256,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -302,8 +290,6 @@ mod tests {
                 length: 5,
                 begin: 0,
                 end: 4,
-                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -319,7 +305,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -355,7 +340,6 @@ mod tests {
                 length: 1,
                 begin: 0,
                 end: 0,
-                html: "<a href=\"www.test.com/0\"></a></br>".to_string()
             }
         );
         assert_eq!(
@@ -371,7 +355,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -406,8 +389,6 @@ mod tests {
                 length: 2,
                 begin: 0,
                 end: 1,
-                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -423,8 +404,6 @@ mod tests {
                 length: 2,
                 begin: 2,
                 end: 3,
-                html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -440,7 +419,6 @@ mod tests {
                 length: 1,
                 begin: 4,
                 end: 4,
-                html: "<a href=\"www.test.com/4\"></a></br>".to_string()
             }
         );
         assert_eq!(
@@ -456,7 +434,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -493,8 +470,6 @@ mod tests {
                 length: 2,
                 begin: 0,
                 end: 1,
-                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -510,8 +485,6 @@ mod tests {
                 length: 2,
                 begin: 2,
                 end: 3,
-                html: "<a href=\"www.test.com/2\"></a></br><a href=\"www.test.com/3\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -527,8 +500,6 @@ mod tests {
                 length: 2,
                 begin: 4,
                 end: 5,
-                html: "<a href=\"www.test.com/4\"></a></br><a href=\"www.test.com/5\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -544,7 +515,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -579,8 +549,6 @@ mod tests {
                 length: 3,
                 begin: 0,
                 end: 2,
-                html: "<a href=\"www.test.com/0\"></a></br><a href=\"www.test.com/1\"></a></br><a href=\"www.test.com/2\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -596,8 +564,6 @@ mod tests {
                 length: 2,
                 begin: 3,
                 end: 4,
-                html: "<a href=\"www.test.com/3\"></a></br><a href=\"www.test.com/4\"></a></br>"
-                    .to_string()
             }
         );
         assert_eq!(
@@ -613,7 +579,6 @@ mod tests {
                 length: 0,
                 begin: 0,
                 end: 0,
-                html: "".to_string()
             }
         );
     }
@@ -643,7 +608,6 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
                 }
             );
         }
@@ -674,7 +638,6 @@ mod tests {
                     length: 1,
                     begin: 0,
                     end: 0,
-                    html: "<a href=\"www.test.com/0\"></a></br>".to_string()
                 }
             );
         }
