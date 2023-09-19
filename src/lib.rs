@@ -157,7 +157,7 @@ mod tests {
             page,
             Page {
                 page_number: 0,
-                length: 0,
+                length: 0,// default page
                 begin: 0,
                 end: 0,
             }
@@ -242,7 +242,7 @@ mod tests {
                 )
             })
         };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+        let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -264,19 +264,7 @@ mod tests {
     fn single_page() {
         let total_items = 5usize;
         let items_per_page = 5usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+        let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -314,19 +302,8 @@ mod tests {
         let total_items = 1usize;
         let items_per_page = 5usize;
 
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+
+        let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -363,19 +340,8 @@ mod tests {
     fn odd_items() {
         let total_items = 5usize;
         let items_per_page = 2usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+
+        let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -443,19 +409,7 @@ mod tests {
         let total_items = 6usize;
         let items_per_page = 2usize;
 
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+        let pages = Pages::new(total_items, items_per_page,None);
 
         assert_eq!(
             match pages.to_page_number(0) {
@@ -523,19 +477,7 @@ mod tests {
     fn odd_sizes() {
         let total_items = 5usize;
         let items_per_page = 3usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+        let pages = Pages::new(total_items, items_per_page, None);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -587,19 +529,8 @@ mod tests {
     fn iterator() {
         let total_items = 1usize;
         let items_per_page = 1usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+
+        let pages = Pages::new(total_items, items_per_page, None);
         for p in pages {
             assert_eq!(
                 p,
@@ -617,19 +548,7 @@ mod tests {
     fn iterator_ref() {
         let total_items = 1usize;
         let items_per_page = 1usize;
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
-        let pages = Pages::new(total_items, items_per_page, Some(f));
+        let pages = Pages::new(total_items, items_per_page, None);
         for p in &pages {
             assert_eq!(
                 p,
