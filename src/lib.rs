@@ -157,7 +157,7 @@ mod tests {
             page,
             Page {
                 page_number: 0,
-                length: 0, // default page
+                length: 0,
                 begin: 0,
                 end: 0,
             }
