@@ -21,7 +21,7 @@ pub struct Pages {
 }
 
 impl Pages {
-    pub fn new(length: usize, per_page: usize, f: Option<fn(usize, usize) -> String>) -> Pages {
+    pub fn new(length: usize, per_page: usize) -> Pages {
         Pages {
             page_number: 0,
             length,
@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn test_iter() {
-        let pages = Pages::new(6, 2, None);
+        let pages = Pages::new(6, 2);
         let mut pages_iter = pages.into_iter();
         assert_eq!(
             pages_iter.next(),
@@ -157,7 +157,7 @@ mod tests {
             page,
             Page {
                 page_number: 0,
-                length: 0,// default page
+                length: 0, // default page
                 begin: 0,
                 end: 0,
             }
@@ -169,7 +169,7 @@ mod tests {
         let total_items = 10usize;
         let items_per_page = 5usize;
 
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -206,7 +206,7 @@ mod tests {
     fn out_of_bound() {
         let total_items = 0usize;
         let items_per_page = 5usize;
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         let page = match pages.to_page_number(1) {
             Ok(page) => page,
             Err(msg) => {
@@ -242,7 +242,7 @@ mod tests {
                 )
             })
         };
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -264,7 +264,7 @@ mod tests {
     fn single_page() {
         let total_items = 5usize;
         let items_per_page = 5usize;
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -302,8 +302,7 @@ mod tests {
         let total_items = 1usize;
         let items_per_page = 5usize;
 
-
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -341,7 +340,7 @@ mod tests {
         let total_items = 5usize;
         let items_per_page = 2usize;
 
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -409,7 +408,7 @@ mod tests {
         let total_items = 6usize;
         let items_per_page = 2usize;
 
-        let pages = Pages::new(total_items, items_per_page,None);
+        let pages = Pages::new(total_items, items_per_page);
 
         assert_eq!(
             match pages.to_page_number(0) {
@@ -477,7 +476,7 @@ mod tests {
     fn odd_sizes() {
         let total_items = 5usize;
         let items_per_page = 3usize;
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
                 Ok(page) => page,
@@ -530,7 +529,7 @@ mod tests {
         let total_items = 1usize;
         let items_per_page = 1usize;
 
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         for p in pages {
             assert_eq!(
                 p,
@@ -548,7 +547,7 @@ mod tests {
     fn iterator_ref() {
         let total_items = 1usize;
         let items_per_page = 1usize;
-        let pages = Pages::new(total_items, items_per_page, None);
+        let pages = Pages::new(total_items, items_per_page);
         for p in &pages {
             assert_eq!(
                 p,
@@ -576,31 +575,31 @@ mod tests {
 
     #[test]
     fn offset() {
-        let pages = Pages::new(100, 5, None);
+        let pages = Pages::new(100, 5);
         assert_eq!(0, pages.offset());
     }
 
     #[test]
     fn length() {
-        let pages = Pages::new(100, 5, None);
+        let pages = Pages::new(100, 5);
         assert_eq!(100, pages.length());
     }
 
     #[test]
     fn limit() {
-        let pages = Pages::new(100, 5, None);
+        let pages = Pages::new(100, 5);
         assert_eq!(5, pages.per_page());
     }
 
     #[test]
     fn page_count() {
-        let pages = Pages::new(100, 5, None);
+        let pages = Pages::new(100, 5);
         assert_eq!(20, pages.page_count());
 
-        let pages = Pages::new(101, 5, None);
+        let pages = Pages::new(101, 5);
         assert_eq!(21, pages.page_count());
 
-        let pages = Pages::new(99, 5, None);
+        let pages = Pages::new(99, 5);
         assert_eq!(20, pages.page_count());
     }
 }
