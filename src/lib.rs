@@ -229,19 +229,6 @@ mod tests {
     fn empty_page() {
         let total_items = 0usize;
         let items_per_page = 5usize;
-
-        let f: fn(usize, usize) -> String = |x, y| -> String {
-            (x..x + y).fold("".to_string(), |s: String, t: usize| {
-                format!(
-                    "{}{}{}{}{}",
-                    s,
-                    "<a href=\"",
-                    get_url(),
-                    t.to_string(),
-                    "\"></a></br>".to_string()
-                )
-            })
-        };
         let pages = Pages::new(total_items, items_per_page);
         assert_eq!(
             match pages.to_page_number(0) {
