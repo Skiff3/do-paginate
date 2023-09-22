@@ -34,7 +34,7 @@ Here's a simple example of how to use the Pagination Library in Rust:
 rust
 
 use paginate_web::{Page,Pages};
-
+```
 fn main() {
     // Create a pagination instance
     let pagination: Pages = Pages::new(1000, 20);
@@ -49,7 +49,7 @@ fn main() {
     println!("Current Page Offset: {}", current_page_post_offset);
     println!("Items on Page: {:?}", total_pages);
 }
-
+```
 Advanced Usage
 Customization
 
