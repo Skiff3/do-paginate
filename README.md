@@ -25,16 +25,18 @@ To get started with the Rust Pagination Library, you can add it as a dependency 
 toml
 
 [dependencies]
+```
 paginate-web = "0.1"
+```
 
 Basic Usage
 
 Here's a simple example of how to use the Pagination Library in Rust:
 
 rust
-
-use paginate_web::{Page,Pages};
 ```
+use paginate_web::{Page,Pages};
+
 fn main() {
     // Create a pagination instance
     let pagination: Pages = Pages::new(1000, 20);
