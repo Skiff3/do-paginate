@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "paginate-web"
+name = "do-paginate"
 version = "0.1.0"
