@@ -2,6 +2,11 @@
 name = "do-paginate"
 version = "0.1.0"
 edition = "2021"
+license = "GNU GENERAL PUBLIC LICENSE"
+description= "A simple pagination library to integrate in the web applications"
+keywords = ["paginate","do-paginate"]
+authors = ["Sakib Bagewadi"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
